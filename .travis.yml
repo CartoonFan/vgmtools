@@ -4,6 +4,8 @@ addons:
     token:
       secure: "sR8Ypxz2LngaoUyjPThUSgx2/Y++b5q1THe6v1U9OX2Rh9TYup6BZf/t2nx8SAIJNcpKizL8bRdHnynfidNx2JaevNckrWpeSTRdWuPYvTUJe1gBRLdnLbmifCcMoLzxnmWlnJdUnlsohbE/2FyIIIy0bKIh8WUhrlmQY11Q6oeDdwmxgPRwTDT7R1fXsQylrKL6dY9O3HVwc2htwLdWyI8tL/k0VdWrXGyTwnfu3pplRVBDE3DQEwex5qZKd4TAASPgy5eZL61iylOQjo3YmgaDq89kMA7YJyCjnYPv7CIUZRUVVTnMb2pMPBQIw8Ndhta1trBBD25MmuyLfZAdtsQAwbUYJfp+EcmotQV248oCPY6XYgf9ssed6N33SsQhW0nZRfoRzyMRiiKZBMaHeJnAgpQNK+xUfiU85/IuLVOvprdzngN0ssA/1hBiGiHXdlYRT4LdaT4ZqQUk4pg1M59XezaJsDAFGv8sXt5NukiMUtdc+8PlRYmhe4mZ7inE2rqVERjdWWn5wotFlXuhG4Zu8zgXoEGnQbEM+MzGxWXwmvX4ay6u53xsECDJs/mUmrjOV+K0aM8dwF90KA+vK9WHCnSTdB+yRiZvPGkMWaHTibq10qBm7CXs9PbZvLZCDOAK2SCu+OB5n7SHp+Ajg3sHs27KzZoz/pre5sFsLe4=" # encrypted value of your token
 
+before_install:
+- git fetch --unshallow
 
 script: 
 # Wraps the compilation with the Build Wrapper to generate configuration (used
