@@ -1951,6 +1951,7 @@ static UINT32 CheckForMinVersion(void)
 			case 0x61:	// xx Sample Delay
 				CmdLen = 0x03;
 				break;
+			case 0x4F:	// GameGear Stereo write
 			case 0x50:	// SN76496 write
 				CmdLen = 0x02;
 				break;
@@ -2137,6 +2138,7 @@ static UINT8 CheckVGMFile(UINT8 Mode)
 					case 0x61:	// xx Sample Delay
 						StopVGM = true;
 						break;
+					case 0x4F:	// GameGear Stereo write
 					case 0x50:	// SN76496 write
 						CmdLen = 0x02;
 						StopVGM = ChipCommandIsValid(Command);
@@ -2264,6 +2266,7 @@ static UINT8 CheckVGMFile(UINT8 Mode)
 				memcpy(&CmdDelay, &VGMData[CurPos + 0x01], 0x02);
 				CmdLen = 0x03;
 				break;
+			case 0x4F:	// GameGear Stereo write
 			case 0x50:	// SN76496 write
 				if (CmdWarning[Command] && ! ChipCommandIsValid(Command))
 				{
@@ -2301,62 +2304,43 @@ static UINT8 CheckVGMFile(UINT8 Mode)
 				CmdLen = 0x05;
 				break;
 			default:	// Handle all other commands
+				// detect the "Gd3 " signature in the VGM data stream
+				// (for VGMs without EOD command)
+				if (Command == 'G' && CurPos + 0x04 <= VGMDataLen)
+				{
+					memcpy(&TempLng, &VGMData[CurPos], 0x04);
+					if (TempLng == FCC_GD3)
+					{
+						CmdLen = 0x00;
+						StopVGM = true;
+						break;
+					}
+				}
 				switch(Command & 0xF0)
 				{
 				case 0x30:
-				case 0x40:
-					// detect the "Gd3 " signature in the VGM data stream
-					// (for VGMs without EOD command)
-					if (Command == 'G' && CurPos + 0x04 <= VGMDataLen)
-					{
-						memcpy(&TempLng, &VGMData[CurPos], 0x04);
-						if (TempLng == FCC_GD3)
-						{
-							StopVGM = true;
-							break;
-						}
-					}
 					CmdLen = 0x02;
-					if (CmdWarning[Command] && ! ChipCommandIsValid(Command))
-					{
-						CmdWarning[Command] = true;
-						if (ChipCommandIsUnknown(Command))
-							printf("0x%X: Warning! Unknown Command %02X found!\n", CurPos, Command);
-						else
-							printf("0x%X: Warning! Command %02X found, but associated chip not "
-									"used!\n", CurPos, Command);
-					}
 					break;
+				case 0x40:
 				case 0x50:
 				case 0xA0:
 				case 0xB0:
 					CmdLen = 0x03;
-					if (CmdWarning[Command] && ! ChipCommandIsValid(Command))
-					{
-						CmdWarning[Command] = true;
-						if (ChipCommandIsUnknown(Command))
-							printf("0x%X: Warning! Unknown Command %02X found!\n", CurPos, Command);
-						else
-							printf("0x%X: Warning! Command %02X found, but associated chip not "
-									"used!\n", CurPos, Command);
-					}
 					break;
 				case 0xC0:
 				case 0xD0:
 					CmdLen = 0x04;
-					if (CmdWarning[Command] && ! ChipCommandIsValid(Command))
-					{
-						CmdWarning[Command] = true;
-						if (ChipCommandIsUnknown(Command))
-							printf("0x%X: Warning! Unknown Command %02X found!\n", CurPos, Command);
-						else
-							printf("0x%X: Warning! Command %02X found, but associated chip not "
-									"used!\n", CurPos, Command);
-					}
 					break;
 				case 0xE0:
 				case 0xF0:
 					CmdLen = 0x05;
+					break;
+				default:
+					CmdLen = 0x00;
+					break;
+				}
+				if (CmdLen)
+				{
 					if (CmdWarning[Command] && ! ChipCommandIsValid(Command))
 					{
 						CmdWarning[Command] = true;
@@ -2366,8 +2350,9 @@ static UINT8 CheckVGMFile(UINT8 Mode)
 							printf("0x%X: Warning! Command %02X found, but associated chip not "
 									"used!\n", CurPos, Command);
 					}
-					break;
-				default:
+				}
+				else
+				{
 					CmdLen = 0x01;
 					if (VGMHead.lngGD3Offset)
 					{
@@ -2378,9 +2363,8 @@ static UINT8 CheckVGMFile(UINT8 Mode)
 					{
 						CmdWarning[Command] = true;
 						BadCmdFound = true;
-						printf("0x%X: Warning! Command with unknown argument length found!\n", CurPos);
+						printf("0x%X: Warning! Command %02X with unknown argument length found!\n", CurPos, Command);
 					}
-					break;
 				}
 				break;
 			}
@@ -2955,6 +2939,7 @@ static UINT32 RelocateVGMLoop(void)
 				memcpy(&CmdDelay, &VGMData[CurPos + 0x01], 0x02);
 				CmdLen = 0x03;
 				break;
+			case 0x4F:	// GameGear Stereo write
 			case 0x50:	// SN76496 write
 				CmdLen = 0x02;
 				break;
@@ -3489,7 +3474,7 @@ static void StripVGMData(void)
 					WriteEvent = false;
 				CmdLen = 0x05;
 				break;
-			case 0x4F:	// GG Stereo
+			case 0x4F:	// GameGear Stereo write
 				WriteEvent = GGStereo(VGMPnt[0x01]);
 				if (WriteEvent && ChipID && StripVGM[0].SN76496.All)
 					VGMPnt[0x00] = Command;
