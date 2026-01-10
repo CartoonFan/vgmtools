@@ -681,7 +681,7 @@ bool ym2612_write(UINT8 Port, UINT8 Register, UINT8 Data)
 			{
 				if ((NxtCmdReg & 0x1FC) == (RegVal & 0x1FC))
 				{
-					return false;	// this will be ignored, because the A0 write is missing
+					return JustTimerCmds ? true : false;	// this will be ignored, because the A0 write is missing
 				}
 				else if ((NxtCmdReg & 0x1FF) == (RegVal & 0x1FB))
 				{
@@ -698,7 +698,7 @@ bool ym2612_write(UINT8 Port, UINT8 Register, UINT8 Data)
 						chip->RegFirst[RegVal] = JustTimerCmds;
 						chip->RegData[RegVal] = Data;
 						chip->RegFirst[RegVal & 0x1FB] = JustTimerCmds;
-						return false;
+						return JustTimerCmds ? true : false;
 					}
 					else
 					{
@@ -1014,7 +1014,7 @@ bool ym2203_write(UINT8 Register, UINT8 Data)
 			{
 				if ((NxtCmdReg & 0xFC) == (Register & 0xFC))
 				{
-					return false;	// this will be ignored, because the A0 write is missing
+					return JustTimerCmds ? true : false;	// this will be ignored, because the A0 write is missing
 				}
 				else if ((NxtCmdReg & 0xFF) == (Register & 0xFB))
 				{
@@ -1031,7 +1031,7 @@ bool ym2203_write(UINT8 Register, UINT8 Data)
 						chip->RegFirst[Register] = JustTimerCmds;
 						chip->RegData[Register] = Data;
 						chip->RegFirst[Register & 0xFB] = JustTimerCmds;
-						return false;
+						return JustTimerCmds ? true : false;
 					}
 					else
 					{
@@ -1141,7 +1141,7 @@ bool ym2608_write(UINT8 Port, UINT8 Register, UINT8 Data)
 			{
 				if ((NxtCmdReg & 0x1FC) == (RegVal & 0x1FC))
 				{
-					return false;	// this will be ignored, because the A0 write is missing
+					return JustTimerCmds ? true : false;	// this will be ignored, because the A0 write is missing
 				}
 				else if ((NxtCmdReg & 0x1FF) == (RegVal & 0x1FB))
 				{
@@ -1158,7 +1158,7 @@ bool ym2608_write(UINT8 Port, UINT8 Register, UINT8 Data)
 						chip->RegFirst[RegVal] = JustTimerCmds;
 						chip->RegData[RegVal] = Data;
 						chip->RegFirst[RegVal & 0x1FB] = JustTimerCmds;
-						return false;
+						return JustTimerCmds ? true : false;
 					}
 					else
 					{
@@ -1254,7 +1254,7 @@ bool ym2610_write(UINT8 Port, UINT8 Register, UINT8 Data)
 			{
 				if ((NxtCmdReg & 0x1FC) == (RegVal & 0x1FC))
 				{
-					return false;	// this will be ignored, because the A0 write is missing
+					return JustTimerCmds ? true : false;	// this will be ignored, because the A0 write is missing
 				}
 				else if ((NxtCmdReg & 0x1FF) == (RegVal & 0x1FB))
 				{
@@ -1271,7 +1271,7 @@ bool ym2610_write(UINT8 Port, UINT8 Register, UINT8 Data)
 						chip->RegFirst[RegVal] = JustTimerCmds;
 						chip->RegData[RegVal] = Data;
 						chip->RegFirst[RegVal & 0x1FB] = JustTimerCmds;
-						return false;
+						return JustTimerCmds ? true : false;
 					}
 					else
 					{
