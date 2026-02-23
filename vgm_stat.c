@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 	}
 
 	printf("File Path or PlayList:\t");
-	if (argc <= 0x01)
+	if (argc <= argbase)
 	{
 		ReadFilename(FileName, sizeof(FileName));
 	}

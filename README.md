@@ -13,6 +13,7 @@ by Valley Bell (@valleybell)
 [vgm_cmp - VGM Compressor](#vgm-compressor-vgm_cmp)  
 [vgm_cnt - VGM Command Counter](#vgm-command-counter-vgm_cnt)  
 [vgm_dbc - VGM Data Block Compressor](#vgm-data-block-compressor-vgm_dbc)  
+[vgm_dscmp - VGM Directory Size Compare](#vgm-directory-size-compare-vgm_dscmp)  
 [vgm_dso - VGM DAC Stream Optimizer](#vgm-dac-stream-optimizer-vgm_dso)  
 [vgm_facc - Make VGM Frame Accurate](#make-vgm-frame-accurate-vgm_facc)  
 [vgm_mono - VGM Mono](#vgm-mono-vgm_mono)  
@@ -166,6 +167,16 @@ TODO: better description
 This tool optimizes VGM "Sample Database" blocks using lossless bit-packing, where possible.
 
 TODO: better description
+
+
+### VGM Directory Size Compare (vgm_dscmp)
+
+This tool goes through all VGM/VGZ files in a directory and summarizes their size.
+It then compares the size of two directories and shows the relative size.
+
+The tool helps doing optimization statistics for making VGM packs.
+
+Note: The tool counts the actual (decompressed) VGM stream data only, excluding the VGM header and GD3 tag.
 
 
 ### VGM DAC Stream Optimizer (vgm_dso)
@@ -327,8 +338,12 @@ Notes:
 ### VGM Statistics (vgm_stat)
 
 This tool prints song length/loop length statistics for a folder or M3U playlist.
+It takes a folder or an M3U playlist, analyses each song and then prints a song list.
 
-TODO: better description
+The list will include song numbers when the tool is used with an M3U playlist.
+This is the preferred method of generating a song list for VGM packs, as it ensures proper indents and line breaks.
+
+Note: Unicode characters are currently broken and may require manual fixing.
 
 
 ### VGM Tagger (vgm_tag)

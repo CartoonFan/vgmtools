@@ -108,6 +108,13 @@ target_link_libraries(vgm_dbc ZLIB::ZLIB)
 install(TARGETS vgm_dbc RUNTIME DESTINATION "bin")
 
 
+add_executable(vgm_dscmp
+    vgm_dscmp.c
+)
+target_link_libraries(vgm_dscmp ZLIB::ZLIB)
+install(TARGETS vgm_dscmp RUNTIME DESTINATION "bin")
+
+
 add_executable(vgm_dso
     vgm_dso.c
 )
