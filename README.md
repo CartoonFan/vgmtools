@@ -171,8 +171,8 @@ TODO: better description
 
 ### VGM Directory Size Compare (vgm_dscmp)
 
-This tool goes through all VGM/VGZ files in a directory and summarizes their size.
-It then compares the size of two directories and shows the relative size.
+This tool goes through all VGM/VGZ files in one or more directory and summarizes their size.
+It then compares the size of all consecutive directories and shows the relative size.
 
 The tool helps doing optimization statistics for making VGM packs.
 

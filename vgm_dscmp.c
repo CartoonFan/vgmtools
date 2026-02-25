@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>	// for isalnum()
-#include <wchar.h>
 #include <locale.h>	// for setlocale()
 #include <zlib.h>
 
@@ -52,8 +50,11 @@ int main(int argc, char* argv[])
 {
 	int argbase;
 	int ErrVal;
-	char FolderName1[MAX_PATH];
-	char FolderName2[MAX_PATH];
+	char FolderName[MAX_PATH];
+	unsigned int dirIdx;
+	unsigned int dirSzCount;
+	unsigned int dirSzAlloc;
+	UINT32* dirSizes;
 	UINT32 dirSize1;
 	UINT32 dirSize2;
 
@@ -64,72 +65,102 @@ int main(int argc, char* argv[])
 	ErrVal = 0;
 	argbase = 1;
 
-	printf("Folder Path 1:\t");
-	if (argc <= argbase + 0)
-	{
-		ReadFilename(FolderName1, sizeof(FolderName1));
-	}
-	else
-	{
-		strcpy(FolderName1, argv[argbase + 0]);
-		printf("%s\n", FolderName1);
-	}
-	if (! strlen(FolderName1))
-		return 0;
-
-	printf("Folder Path 2:\t");
-	if (argc <= argbase + 1)
-	{
-		ReadFilename(FolderName2, sizeof(FolderName2));
-	}
-	else
-	{
-		strcpy(FolderName1, argv[argbase + 1]);
-		printf("%s\n", FolderName2);
-	}
-	if (! strlen(FolderName2))
-		return 0;
-
-	EnsureDirPath(FolderName1);
-	EnsureDirPath(FolderName2);
-
+	// TODO: change logic so that:
+	//	- when calling without parameters, ask for folder names until an empty folder is entered
+	//	- when calling with arguments, just use the arguments as folder names
+	//	- remember all sizes
+	//	- show 1->2, 2->3, 3->4, ..., and finally 1->n
 	TrackAlloc = 0;
 	TrackList = NULL;
+	if (argc <= argbase)
+	{
+		// called without parameters -> ask for folder names until an empty folder is entered
+		printf("Enter folder paths (or a file inside the folder).\n");
+		printf("Press Return without typing anything to finish.\n");
+		printf("\n");
+		dirSzAlloc = 4;
+		dirSizes = (UINT32*)malloc(dirSzAlloc * sizeof(UINT32));
+		for (dirIdx = 0; ; dirIdx ++)
+		{
+			if (dirIdx >= dirSzAlloc)
+			{
+				dirSzAlloc *= 2;
+				dirSizes = (UINT32*)realloc(dirSizes, dirSzAlloc * sizeof(UINT32));
+			}
 
-	TrackCount = 0;
-	AllTrackSize = 0;
-	ReadDirectory(FolderName1);
-	{
-		char bufferS[0x10];
-		char bufferG[0x10];
-		sprintUIntSize(bufferS, AllTrackSize);
-		sprintUIntGrouped(bufferG, AllTrackSize);
-		printf("Folder 1 Total: %u files, %s (%s bytes)\n", TrackCount, bufferS, bufferG);
-	}
-	dirSize1 = AllTrackSize;
-	printf("\n");
-	
-	TrackCount = 0;
-	AllTrackSize = 0;
-	ReadDirectory(FolderName2);
-	{
-		char bufferS[0x10];
-		char bufferG[0x10];
-		sprintUIntSize(bufferS, AllTrackSize);
-		sprintUIntGrouped(bufferG, AllTrackSize);
-		printf("Folder 2 Total: %u files, %s (%s bytes)\n", TrackCount, bufferS, bufferG);
-	}
-	dirSize2 = AllTrackSize;
-	printf("\n");
+			printf("Folder Path %u:\t", 1 + dirIdx);
+			ReadFilename(FolderName, sizeof(FolderName));
+			if (! strlen(FolderName))
+				break;
+			EnsureDirPath(FolderName);
 
+			TrackCount = 0;
+			AllTrackSize = 0;
+			ReadDirectory(FolderName);
+			{
+				char bufferS[0x10];
+				char bufferG[0x10];
+				sprintUIntSize(bufferS, AllTrackSize);
+				sprintUIntGrouped(bufferG, AllTrackSize);
+				printf("Folder %u Total: %u files, %s (%s bytes)\n", 1 + dirIdx, TrackCount, bufferS, bufferG);
+			}
+			dirSizes[dirIdx] = AllTrackSize;
+			printf("\n");
+		}
+		dirSzCount = dirIdx;
+		printf("\n");
+	}
+	else
 	{
+		//	called with arguments -> walk through the argument list
+		dirSzCount = (unsigned int)(argc - argbase);
+		dirSzAlloc = dirSzCount;
+		dirSizes = (UINT32*)malloc(dirSzAlloc * sizeof(UINT32));
+		for (dirIdx = 0; dirIdx < dirSzCount; dirIdx ++)
+		{
+			printf("Folder Path %u:\t", 1 + dirIdx);
+			strcpy(FolderName, argv[argbase + dirIdx]);
+			printf("%s\n", FolderName);
+			EnsureDirPath(FolderName);
+
+			TrackCount = 0;
+			AllTrackSize = 0;
+			ReadDirectory(FolderName);
+			{
+				char bufferS[0x10];
+				char bufferG[0x10];
+				sprintUIntSize(bufferS, AllTrackSize);
+				sprintUIntGrouped(bufferG, AllTrackSize);
+				printf("Folder %u Total: %u files, %s (%s bytes)\n", 1 + dirIdx, TrackCount, bufferS, bufferG);
+			}
+			dirSizes[dirIdx] = AllTrackSize;
+			printf("\n");
+		}
+	}
+
+	printf("Summary:\n");
+	for (dirIdx = 1; dirIdx < dirSzCount; dirIdx ++)
+	{
+		UINT32 dirSize1 = dirSizes[dirIdx - 1];
+		UINT32 dirSize2 = dirSizes[dirIdx - 0];
 		char buffer1[0x10];
 		char buffer2[0x10];
 		double ratioPerc = (double)dirSize2 / (double)dirSize1 * 100.0;
 		UINT8 rPrecision = GetFixLenPrecision(ratioPerc, 4);
 		sprintUIntSize(buffer1, dirSize1);
 		sprintUIntSize(buffer2, dirSize2);
-		printf("%s -> %s (%.*f %%)\n", buffer1, buffer2, rPrecision, ratioPerc);
+		printf("%u.: %s -> %s (%.*f %%)\n", dirIdx, buffer1, buffer2, rPrecision, ratioPerc);
+	}
+	{
+		UINT32 dirSize1 = dirSizes[0];
+		UINT32 dirSize2 = dirSizes[dirSzCount - 1];
+		char buffer1[0x10];
+		char buffer2[0x10];
+		double ratioPerc = (double)dirSize2 / (double)dirSize1 * 100.0;
+		UINT8 rPrecision = GetFixLenPrecision(ratioPerc, 4);
+		sprintUIntSize(buffer1, dirSize1);
+		sprintUIntSize(buffer2, dirSize2);
+		printf("Total: %s -> %s (%.*f %%)\n", buffer1, buffer2, rPrecision, ratioPerc);
 	}
 
 //EndProgram:
@@ -391,7 +422,7 @@ static void ReadDirectory(const char* DirName)
 	BOOL RetVal;
 #else
 	struct stat st;
-	int i;
+	size_t i;
 #endif
 	char FileName[MAX_PATH];
 	char* TempPnt;
