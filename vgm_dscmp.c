@@ -55,8 +55,8 @@ int main(int argc, char* argv[])
 	unsigned int dirSzCount;
 	unsigned int dirSzAlloc;
 	UINT32* dirSizes;
-	UINT32 dirSize1;
-	UINT32 dirSize2;
+	char buffer1[0x10];
+	char buffer2[0x10];
 
 	setlocale(LC_CTYPE, "C");	// enforce decimal dot
 
@@ -65,11 +65,6 @@ int main(int argc, char* argv[])
 	ErrVal = 0;
 	argbase = 1;
 
-	// TODO: change logic so that:
-	//	- when calling without parameters, ask for folder names until an empty folder is entered
-	//	- when calling with arguments, just use the arguments as folder names
-	//	- remember all sizes
-	//	- show 1->2, 2->3, 3->4, ..., and finally 1->n
 	TrackAlloc = 0;
 	TrackList = NULL;
 	if (argc <= argbase)
@@ -97,14 +92,11 @@ int main(int argc, char* argv[])
 			TrackCount = 0;
 			AllTrackSize = 0;
 			ReadDirectory(FolderName);
-			{
-				char bufferS[0x10];
-				char bufferG[0x10];
-				sprintUIntSize(bufferS, AllTrackSize);
-				sprintUIntGrouped(bufferG, AllTrackSize);
-				printf("Folder %u Total: %u files, %s (%s bytes)\n", 1 + dirIdx, TrackCount, bufferS, bufferG);
-			}
 			dirSizes[dirIdx] = AllTrackSize;
+
+			sprintUIntSize(buffer1, AllTrackSize);
+			sprintUIntGrouped(buffer2, AllTrackSize);
+			printf("Folder %u Total: %u files, %s (%s bytes)\n", 1 + dirIdx, TrackCount, buffer1, buffer2);
 			printf("\n");
 		}
 		dirSzCount = dirIdx;
@@ -126,14 +118,11 @@ int main(int argc, char* argv[])
 			TrackCount = 0;
 			AllTrackSize = 0;
 			ReadDirectory(FolderName);
-			{
-				char bufferS[0x10];
-				char bufferG[0x10];
-				sprintUIntSize(bufferS, AllTrackSize);
-				sprintUIntGrouped(bufferG, AllTrackSize);
-				printf("Folder %u Total: %u files, %s (%s bytes)\n", 1 + dirIdx, TrackCount, bufferS, bufferG);
-			}
 			dirSizes[dirIdx] = AllTrackSize;
+
+			sprintUIntSize(buffer1, AllTrackSize);
+			sprintUIntGrouped(buffer2, AllTrackSize);
+			printf("Folder %u Total: %u files, %s (%s bytes)\n", 1 + dirIdx, TrackCount, buffer1, buffer2);
 			printf("\n");
 		}
 	}
@@ -143,8 +132,6 @@ int main(int argc, char* argv[])
 	{
 		UINT32 dirSize1 = dirSizes[dirIdx - 1];
 		UINT32 dirSize2 = dirSizes[dirIdx - 0];
-		char buffer1[0x10];
-		char buffer2[0x10];
 		double ratioPerc = (double)dirSize2 / (double)dirSize1 * 100.0;
 		UINT8 rPrecision = GetFixLenPrecision(ratioPerc, 4);
 		sprintUIntSize(buffer1, dirSize1);
@@ -154,8 +141,6 @@ int main(int argc, char* argv[])
 	{
 		UINT32 dirSize1 = dirSizes[0];
 		UINT32 dirSize2 = dirSizes[dirSzCount - 1];
-		char buffer1[0x10];
-		char buffer2[0x10];
 		double ratioPerc = (double)dirSize2 / (double)dirSize1 * 100.0;
 		UINT8 rPrecision = GetFixLenPrecision(ratioPerc, 4);
 		sprintUIntSize(buffer1, dirSize1);
